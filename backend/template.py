@@ -1,38 +1,35 @@
-
-import os
-import re
-from collections import Counter
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from werkzeug.utils import secure_filename
-
 import nltk
+import re
+import os
+from collections import Counter
+from werkzeug.utils import secure_filename
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 
-def _ensure_nltk():
+# ---------- Runtime-safe NLTK bootstrap ----------
+def ensure_nltk():
     try:
-        # Will raise LookupError if missing
-        _ = stopwords.words("english")
-    except LookupError:
-        nltk.download("stopwords")
-    try:
-        _ = word_tokenize("test")
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
         nltk.download("punkt")
+    try:
+        nltk.data.find("corpora/stopwords")
+    except LookupError:
+        nltk.download("stopwords")
 
-# --- App / Config ---
+ensure_nltk()
+# -------------------------------------------------
+
 app = Flask(__name__)
 
-FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN")  # e.g., https://your-app.vercel.app
-if FRONTEND_ORIGIN:
-    CORS(app, resources={r"/*": {"origins": [FRONTEND_ORIGIN]}})
-else:
-    # Dev-friendly fallback
-    CORS(app)
+# CORS: restrict to your deployed frontend origin (set env FRONTEND_ORIGIN)
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "*")
+CORS(app, resources={r"/*": {"origins": frontend_origin}})
 
-# Use /tmp on Render (ephemeral but writable). Works locally too.
-UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "/tmp/uploads")
+# Use /tmp on Render (ephemeral storage)
+UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", "/tmp/uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -52,26 +49,23 @@ def parse_sections(text, format_type):
         if not line:
             continue
 
-        # Detect header switch if line begins with a known header (case-insensitive)
         for header in headers:
-            if re.match(rf"^{header}", line, re.IGNORECASE):
+            if re.match(rf"^{header}\b", line, re.IGNORECASE):
                 current_section = header
                 break
 
         if current_section:
-            # Avoid duplicating the section title line itself
-            if not re.match(rf"^{current_section}", line, re.IGNORECASE):
+            if not re.match(rf"^{current_section}\b", line, re.IGNORECASE):
                 sections[current_section] += line + "\n"
 
     return sections
 
 def extract_keywords(text, num_keywords=5):
-    _ensure_nltk()
     words = word_tokenize(text.lower())
     stop_words = set(stopwords.words("english"))
     filtered_words = [w for w in words if w.isalnum() and w not in stop_words]
-    most_common = Counter(filtered_words).most_common(num_keywords)
-    return ", ".join([w for w, _ in most_common])
+    most_common_words = Counter(filtered_words).most_common(num_keywords)
+    return ", ".join([w for w, _ in most_common_words])
 
 def format_document(sections, format_type):
     formatted_text = ""
@@ -80,7 +74,7 @@ def format_document(sections, format_type):
     for header, content in sections.items():
         content = content.strip()
 
-        if header.lower() not in {"abstract", "references"}:
+        if header.lower() not in ["abstract", "references"]:
             numbered_header = f"{section_number}. {header}"
             section_number += 1
         else:
@@ -89,15 +83,13 @@ def format_document(sections, format_type):
         if not content:
             formatted_text += f"**{numbered_header}**\n\n"
         else:
-            # Preserve bullets for common “methods” sections
             if header in ["Methodology", "Materials and Methods"] and "\n" in content:
                 content = "\n".join(
-                    f"- {line.strip()}" if line.strip() and not line.strip().startswith("-") else line
-                    for line in content.split("\n")
+                    f"- {ln.strip()}" if ln.strip() and not ln.strip().startswith("-") else ln
+                    for ln in content.split("\n")
                 )
             formatted_text += f"**{numbered_header}**\n{content}\n\n"
 
-    # Add Keywords after Abstract if present
     if "Abstract" in sections and sections["Abstract"].strip():
         full_text = " ".join(sections.values())
         keywords = extract_keywords(full_text)
@@ -110,22 +102,21 @@ def format_document(sections, format_type):
 
 @app.route("/healthz", methods=["GET"])
 def healthz():
-    return jsonify({"ok": True})
+    return jsonify({"ok": True}), 200
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
     format_type = request.form.get("format", "IEEE")
 
-    # manual_text takes precedence when provided
     if "manual_text" in request.form:
         raw_text = request.form["manual_text"]
     elif "file" in request.files:
-        f = request.files["file"]
-        filename = secure_filename(f.filename or "input.txt")
+        file = request.files["file"]
+        filename = secure_filename(file.filename or "input.txt")
         filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        f.save(filepath)
-        with open(filepath, "r", encoding="utf-8") as fh:
-            raw_text = fh.read()
+        file.save(filepath)
+        with open(filepath, "r", encoding="utf-8") as f:
+            raw_text = f.read()
     else:
         return jsonify({"error": "No input provided"}), 400
 
@@ -133,10 +124,8 @@ def upload_file():
     formatted_text = format_document(sections, format_type)
     return jsonify({"formatted_text": formatted_text})
 
-def create_app():
-    return app
-
 if __name__ == "__main__":
-    # Local dev server; Render uses gunicorn (see render.yaml below)
-    port = int(os.environ.get("PORT", "5005"))
-    app.run(host="0.0.0.0", port=port)
+    # Render sets $PORT; default to 5005 for local dev
+    port = int(os.getenv("PORT", "5005"))
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug)

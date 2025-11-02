@@ -1,0 +1,226 @@
+
+'use client';
+
+import { useState } from 'react';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { saveAs } from 'file-saver';
+
+const templates: Record<string, string> = {
+  "IEEE": `# IEEE Research Paper Template
+
+##Title of the Paper
+#Author Name(s)  
+#Affiliation  
+#Email Address  
+
+Abstract  
+#The abstract should summarize the content of the paper. It should be concise and contain a brief overview of the objectives, methods, results, and conclusions. Typically, the abstract should be no longer than 250 words.
+
+Keywords  
+#Provide 4-5 keywords that best describe your research.
+
+---
+
+1. Introduction  
+#The introduction should introduce the problem, provide background information, and outline the objectives of the research. Clearly state the research question and the motivation behind the study.
+
+2. Related Work  
+#This section should summarize previous research related to the topic. Include references to relevant papers and explain how your research builds on or differs from existing work.
+
+3. Methodology  
+#Describe the methods and techniques used in your research. This may include mathematical models, algorithms, experiments, or simulations. Clearly explain the rationale behind your approach.
+
+3.1 Data Collection  
+#Describe how data was collected, including sources, tools, and methodologies used.
+
+3.2 Experimental Setup  
+#Explain the setup of experiments, including hardware and software specifications.
+
+3.3 Evaluation Metrics  
+#Specify how performance is measured and which metrics are used.
+
+4. Results and Discussion  
+#Present your findings with supporting evidence such as tables, graphs, and figures. Provide a detailed discussion on the significance of the results, how they compare with previous work, and any potential limitations.
+
+4.1 Performance Analysis  
+#Analyze the performance of your proposed approach using different benchmarks.
+
+4.2 Comparative Study  
+#Compare your results with existing techniques.
+
+5. Conclusion and Future Work  
+#Summarize the key contributions of your research. Discuss potential applications and future improvements.
+
+References  
+[1] Author(s), "Title of the Paper," *Journal Name*, vol. X, no. Y, pp. Z–ZZ, Year.`,
+
+  "Springer": `# Springer Research Paper Template
+
+## Title of the Paper  
+Author Name(s)  
+Affiliation  
+Email Address  
+
+### Abstract  
+The abstract should summarize the objectives, methods, results, and conclusions of the research. It should be concise, typically no more than 250 words.
+
+### Keywords  
+List 4-6 keywords relevant to your research.
+
+---
+
+## 1. Introduction  
+The introduction presents the research problem, its significance, and the objectives of the study. Provide background information and state the research question.
+
+## 2. Literature Review  
+This section discusses related work, summarizing previous research on the topic. Cite relevant literature and explain how your work builds upon or differs from existing studies.
+
+## 3. Methodology  
+Describe the methods and techniques used for data collection, analysis, and experimentation. Explain the approach and justify why it was chosen.
+
+### 3.1 Data Collection  
+Explain how data was gathered, including sources and tools used.
+
+### 3.2 Experimental Setup  
+Describe the experimental environment, including hardware and software specifications.
+
+### 3.3 Statistical Analysis  
+Explain how the data is processed and analyzed.
+
+## 4. Results and Discussion  
+Present your findings in the form of tables, charts, and graphs. Interpret the results, compare them with previous studies, and discuss their significance.
+
+### 4.1 Experimental Results  
+Describe the outcomes of your experiments.
+
+### 4.2 Comparative Study  
+Compare your findings with existing research.
+
+## 5. Conclusion and Future Work  
+Summarize the key contributions of the paper and suggest possible future research directions.
+
+## Acknowledgments  
+(Optional) Acknowledge funding sources, contributors, and institutions.
+
+## References  
+[1] Author(s), "Title of the Paper," *Journal Name*, vol. X, no. Y, pp. Z–ZZ, Year.`,
+
+  "Elsevier": `# Elsevier Research Paper Template
+
+## Title of the Paper  
+Author Name(s)  
+Affiliation  
+Email Address  
+
+### Abstract  
+The abstract should provide a concise summary of the objectives, methods, results, and conclusions of the research. It should be around 150-250 words. Avoid citations in the abstract.
+
+### Keywords  
+Provide 4-6 keywords separated by commas.
+
+---
+
+## 1. Introduction  
+The introduction should provide background information, explain the research problem, and outline the objectives of the study. Clearly state the research question and hypothesis.
+
+## 2. Literature Review  
+This section discusses previous studies relevant to the topic, identifying gaps that your research aims to address.
+
+## 3. Materials and Methods  
+Describe the experimental setup, data collection methods, and analysis techniques used in your study. Provide enough details for replication.
+
+### 3.1 Data Collection  
+Explain how data was gathered, including sources and any preprocessing steps.
+
+### 3.2 Experimental Design  
+Describe the design of experiments, including tools, frameworks, or models used.
+
+### 3.3 Statistical Methods  
+Detail any statistical methods used for data analysis and validation.
+
+## 4. Results  
+Present the results of your study using tables, figures, and graphs. Clearly describe findings without interpretation.
+
+### 4.1 Quantitative and Qualitative Findings  
+Include statistical analyses, performance comparisons, and observations.
+
+### 4.2 Figures and Tables  
+Ensure that figures and tables are numbered and referenced correctly.
+
+## 5. Discussion  
+Interpret the results in relation to the research question. Compare findings with previous research and discuss limitations.
+
+## 6. Conclusion  
+Summarize the main findings, contributions, and potential applications. Suggest areas for future research.
+
+## Acknowledgments  
+(Optional) Acknowledge funding sources, institutions, or individuals who contributed to the study.
+
+## References  
+[1] Author(s), "Title of the Paper," *Journal Name*, vol. X, no. Y, pp. Z–ZZ, Year.`
+};
+
+const TemplateEditor = () => {
+  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof templates>("IEEE");
+  const [text, setText] = useState(templates["IEEE"]); // Initialize with IEEE template
+
+  // Handle template change
+  const handleTemplateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTemplate = event.target.value as keyof typeof templates;
+    setSelectedTemplate(newTemplate);
+    setText(templates[newTemplate]); // Load new template text
+  };
+
+  // Function to generate and download DOCX file
+  const exportToDocx = () => {
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: text.split("\n").map((line) =>
+            new Paragraph({
+              children: [new TextRun(line)],
+            })
+          ),
+        },
+      ],
+    });
+
+    Packer.toBlob(doc).then((blob) => {
+      saveAs(blob, `${selectedTemplate}_Template.docx`);
+    });
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>Select a Research Paper Template</h2>
+      <select onChange={handleTemplateChange} value={selectedTemplate} style={{ fontSize: "16px", padding: "5px" }}>
+        {Object.keys(templates).map((key) => (
+          <option key={key} value={key}>{key}</option>
+        ))}
+      </select>
+
+      <button onClick={exportToDocx} style={{ marginLeft: "10px", padding: "8px 12px", fontSize: "16px" }}>
+        Export as DOCX
+      </button>
+
+      <textarea 
+        value={text} 
+        onChange={(e) => setText(e.target.value)} 
+        rows={15} 
+        cols={80} 
+        style={{ 
+          marginTop: "10px", 
+          width: "100%", 
+          height: "300px", 
+          fontSize: "16px", 
+          padding: "10px", 
+          border: "1px solid #ccc", 
+          borderRadius: "5px" 
+        }} 
+      />
+    </div>
+  );
+};
+
+export default TemplateEditor;

@@ -1,0 +1,193 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.ocr-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  height: 60px;
+  background: #ffffff;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+
+
+} 
+
+.img-preview-header {
+  display: flex;
+  align-items: center;   /* vertically centers the items */
+  gap: 10px;             /* adds spacing between image and text */
+  margin-bottom: 1rem;   /* optional: adds spacing below the header */
+}
+.nav-title{
+  font-size: 25px;
+  font-weight: bold;
+  color: black;
+}
+.nav-user img.user-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ocr-title {
+  text-align: center;
+  margin: 20px 0 10px;
+  font-size: 28px;
+}
+
+.image-icon-label {
+  display: block;
+  margin: 0 auto 20px;
+  cursor: pointer;
+  width: 60px;
+}
+
+
+.img-icon{
+  
+    width: 40px;           /* or any size you prefer */
+    height: 40px;
+    border-radius: 50%;    /* optional: makes it circular */
+    object-fit: cover;
+  
+}
+.hidden-file-input {
+  display: none;
+}
+
+.ocr-content {
+  flex: 1;
+  display: flex;
+  gap: 24px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.ocr-panel {
+  flex: 1;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  overflow-y: auto;
+  height: calc(100vh - 250px); /* navbar + title + spacing + btn group */
+}
+
+.ocr-preview img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.ocr-output p {
+  white-space: pre-wrap;
+  margin-top: 10px;
+}
+
+.ocr-export-btn {
+  margin-top: 16px;
+  padding: 10px 18px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ocr-btn-group {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.ocr-upload-btn {
+  padding: 12px 24px;
+  background: #58a6ff;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ocr-upload-btn:disabled {
+  background: #aaa;
+  cursor: wait;
+  
+}
+
+.ocr-error {
+  color: red;
+  text-align: center;
+  margin-top: 10px;
+}
+
+
+.ocr-btn-group-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3%;
+  margin: 20px 0;
+}
+
+.image-icon-label {
+  width: auto;
+  margin: 0;
+}
+
+.image-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 60px; /* Push it a little towards bottom */
+  right: 20px;
+  background-color: #e0e0e0; /* Light greyish */
+  color: #000; /* Black text */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  min-width: 150px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: #d3d3d3; /* Slightly darker on hover */
+}
+
+.dropdown-item.logout {
+  color: #d32f2f; /* Red color for logout */
+  font-weight: 600;
+}
+
+.profile-icon {
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ccc;
+}
+
+

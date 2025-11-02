@@ -1,0 +1,90 @@
+.body {
+  font-family: "Arial", sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+}
+
+.container {
+  width: 60%;
+  max-width: 900px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+}
+
+/* Top bar with dropdown, radio buttons, and upload button */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+  background: #fff;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 10px;
+}
+
+.format-container,
+.input-mode,
+.upload-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.input[type="radio"] {
+  margin-right: 5px;
+}
+
+.button {
+  background-color: #0070f3;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.button:hover {
+  background-color: #005bb5;
+}
+
+.text-box {
+  width: 800px;  /* Fixed width */
+  min-height: 50vh; /* Minimum height is 50% of screen */
+  height: auto; /* Let it grow based on content */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  resize: none; /* No resizing */
+  overflow-y: auto; /* Scroll if content overflows */
+  display: block;
+}
+
+
+
+
+
